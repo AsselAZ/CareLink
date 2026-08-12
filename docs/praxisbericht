@@ -1,0 +1,28 @@
+# Praxisphase – Arbeitsnotizen
+
+## 12.08.2026
+
+### Was wurde gemacht?
+- Projektstruktur geplant
+- Tech-Stack ausgewählt:
+  - FastAPI
+  - Next.js
+  - PostgreSQL
+- GitHub-Repository erstellt
+- .gitignore vorbereitet
+
+### Warum wurde diese Entscheidung getroffen?
+FastAPI wurde als Backend gewählt, da Python eine direkte Integration
+von KI- und Matching-Verfahren ermöglicht.
+
+Next.js wurde als Frontend gewählt, da moderne Webanwendungen damit
+komponentenbasiert entwickelt werden können.
+
+PostgreSQL wurde gewählt, da Nutzer, Aufgaben, Bewertungen und
+Beziehungen zwischen diesen Daten relational modelliert werden können.
+
+### Was muss noch recherchiert werden?
+- Unterschiede zwischen Django und FastAPI
+- Geeignete Matching-Verfahren
+- Möglichkeiten für KI-gestützte Freitextanalyse
+- Empfehlungssysteme
