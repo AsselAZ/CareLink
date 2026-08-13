@@ -1,0 +1,20 @@
+# Forschungsfragen / offene Fragen
+
+## Architektur
+- Warum FastAPI statt Django?
+- Warum PostgreSQL?
+- Wie kommunizieren Frontend und Backend?
+
+## Matching
+- Welche Matching-Algorithmen gibt es?
+- Welche Kriterien eignen sich für Senior-Helfer-Matching?
+- Wie können Kriterien gewichtet werden?
+
+## KI
+- Welche KI-Modelle eignen sich für Freitextanalyse?
+- Wie gut erkennen verschiedene Modelle Tippfehler?
+- Wie können wiederkehrende Nutzerwünsche erkannt werden?
+
+## Evaluation
+- Wie lässt sich die Qualität eines Matchings messen?
+- Wie können KI-Modelle objektiv verglichen werden?s

@@ -3,7 +3,7 @@
 NeighborMatch ist eine intelligente Plattform für Nachbarschaftshilfe.
 
 Ziel ist es, Hilfesuchende und Helfer miteinander zu verbinden und durch
-KI- und Matching-Algorithmen passende Empfehlungen zu ermöglichen.
+KI und Matching-Algorithmen passende Empfehlungen zu ermöglichen.
 
 ## Geplanter Tech-Stack
 
