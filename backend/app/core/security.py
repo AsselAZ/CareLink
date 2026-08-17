@@ -1,9 +1,20 @@
-from pwdlib import PasswordHash
+import os
+from datetime import datetime, timedelta, timezone
 
+import jwt
+from dotenv import load_dotenv
+from pwdlib import PasswordHash
+load_dotenv()
 
 # Wird für das sichere Hashen und Prüfen von Passwörtern verwendet
 password_hash = PasswordHash.recommended()
 
+#JWT sicher heit
+JWT_SECRET = os.getenv("JWT_SECRET")
+JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(
+    os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")
+)
 
 def hash_password(password: str) -> str:
     return password_hash.hash(password)
@@ -11,3 +22,20 @@ def hash_password(password: str) -> str:
 
 def verify_password(password: str, hashed_password: str) -> bool:
     return password_hash.verify(password, hashed_password)
+
+# Erstellt einen zeitlich begrenzten Login Token für einen Nutzer gerade 30Minuten
+def create_access_token(user_id: int) -> str:
+    expires_at = datetime.now(timezone.utc) + timedelta(
+        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+    )
+
+    payload = {
+        "sub": str(user_id), # subject
+        "exp": expires_at,# expire
+    }
+
+    return jwt.encode(
+        payload,
+        JWT_SECRET,
+        algorithm=JWT_ALGORITHM,
+    )
