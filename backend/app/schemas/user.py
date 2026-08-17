@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -25,3 +26,15 @@ class UserLogin(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str
+
+class AddressData(BaseModel):
+    street: str
+    house_number: str
+    postal_code: str
+    city: str
+
+
+class UserProfileUpdate(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    address: Optional[AddressData] = None

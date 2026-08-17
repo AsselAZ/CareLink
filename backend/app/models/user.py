@@ -1,7 +1,7 @@
 from enum import Enum
 
 from sqlalchemy import Boolean, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
 
@@ -35,3 +35,8 @@ class User(Base):
         Boolean,
         default=True,
     )
+    address = relationship(
+    "Address",
+    back_populates="user",
+    uselist=False,
+)
