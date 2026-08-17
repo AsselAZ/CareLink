@@ -6,6 +6,11 @@ from app.core.security import hash_password
 from app.db.database import get_db
 from app.models.user import User
 from app.schemas.user import UserCreate
+from app.api.dependencies import (
+    get_current_user,
+    require_helper,
+    require_senior,
+)
 
 
 router = APIRouter(
@@ -49,4 +54,36 @@ def register_user(
         "last_name": new_user.last_name,
         "email": new_user.email,
         "role": new_user.role,
+    }
+
+@router.get("/me")
+def get_my_profile(
+    current_user: User = Depends(get_current_user),
+):
+    #Gibt die Daten des aktuell eingeloggten Nutzers zurück
+    return {
+        "id": current_user.id,
+        "first_name": current_user.first_name,
+        "last_name": current_user.last_name,
+        "email": current_user.email,
+        "role": current_user.role,
+    }
+# Diese Route ist nur für eingeloggte Senioren zugänglich
+@router.get("/senior-test")
+def senior_test(
+    current_user: User = Depends(require_senior),
+):
+    return {
+        "message": "Senior-Bereich erlaubt",
+        "user_id": current_user.id,
+    }
+
+# Diese Route ist nur für eingeloggte Helfer zugänglich
+@router.get("/helper-test")
+def helper_test(
+    current_user: User = Depends(require_helper),
+):
+    return {
+        "message": "Helfer-Bereich erlaubt",
+        "user_id": current_user.id,
     }
