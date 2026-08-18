@@ -1,11 +1,13 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.dependencies import require_senior
+from app.api.dependencies import require_senior, require_helper
 from app.db.database import get_db
 from app.models.task import Task, TaskStatus
 from app.models.user import User
 from app.schemas.task import TaskCreate, TaskCategory
+
+from sqlalchemy import select
 
 from app.models.task_details import (
     ShoppingDetails,
@@ -118,3 +120,49 @@ def create_task(
         "status": new_task.status,
         "senior_id": new_task.senior_id,
     }
+
+# Diese Route ist nur für eingeloggte Helfer zugänglich
+@router.post("/{task_id}/accept")
+def accept_task(
+    task_id: int,
+    current_user: User = Depends(require_helper),
+    db: Session = Depends(get_db),
+):
+    # Task anhand seiner ID suchen
+    task = db.get(Task, task_id)
+
+    # Prüfen, ob der Task überhaupt existiert
+    if task is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task wurde nicht gefunden.",
+        )
+
+    # Nur offene Tasks dürfen angenommen werden
+    if task.status != TaskStatus.OPEN.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Dieser Task ist nicht mehr offen.",
+        )
+
+    # Eingeloggten Helfer eintragen
+    task.helper_id = current_user.id
+
+    # Status ändern
+    task.status = TaskStatus.ACCEPTED.value
+
+    db.commit()
+    db.refresh(task)
+
+    return task
+
+@router.get("/open")
+def get_open_tasks(
+    current_user: User = Depends(require_helper),
+    db: Session = Depends(get_db),
+):
+    open_tasks = db.scalars(
+        select(Task).where(Task.status == TaskStatus.OPEN.value)
+    ).all()
+
+    return open_tasks
