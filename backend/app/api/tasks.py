@@ -166,3 +166,30 @@ def get_open_tasks(
     ).all()
 
     return open_tasks
+
+@router.get("/accepted/mine")
+def get_my_accepted_tasks(
+    current_user: User = Depends(require_helper),
+    db: Session = Depends(get_db),
+):
+    tasks = db.scalars(
+        select(Task).where(
+            Task.helper_id == current_user.id,
+            Task.status == TaskStatus.ACCEPTED.value,
+        )
+    ).all()
+
+    return tasks
+
+@router.get("/senior/mine")
+def get_my_tasks(
+    current_user: User = Depends(require_senior),
+    db: Session = Depends(get_db),
+):
+    tasks = db.scalars(
+        select(Task).where(
+            Task.senior_id == current_user.id
+        )
+    ).all()
+
+    return tasks
