@@ -193,3 +193,77 @@ def get_my_tasks(
     ).all()
 
     return tasks
+
+# Diese Route ist nur für eingeloggte Senioren zugänglich
+@router.post("/{task_id}/confirm/helper")
+def confirm_task_as_helper(
+    task_id: int,
+    current_user: User = Depends(require_helper),
+    db: Session = Depends(get_db),
+):
+    task = db.get(Task, task_id)
+
+    if task is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task wurde nicht gefunden.",
+        )
+
+    if task.helper_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Dieser Task wurde nicht von Ihnen angenommen.",
+        )
+
+    if task.status != TaskStatus.ACCEPTED.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nur angenommene Tasks können bestätigt werden.",
+        )
+
+    task.helper_confirmed = True
+
+    if task.senior_confirmed:
+        task.status = TaskStatus.DONE.value
+
+    db.commit()
+    db.refresh(task)
+
+    return task
+
+# Diese Route ist nur für eingeloggte Senioren zugänglich
+@router.post("/{task_id}/confirm/senior")
+def confirm_task_as_senior(
+    task_id: int,
+    current_user: User = Depends(require_senior),
+    db: Session = Depends(get_db),
+):
+    task = db.get(Task, task_id)
+
+    if task is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task wurde nicht gefunden.",
+        )
+
+    if task.senior_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Dieser Task gehört nicht zu Ihnen.",
+        )
+
+    if task.status != TaskStatus.ACCEPTED.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nur angenommene Tasks können bestätigt werden.",
+        )
+
+    task.senior_confirmed = True
+
+    if task.helper_confirmed:
+        task.status = TaskStatus.DONE.value
+
+    db.commit()
+    db.refresh(task)
+
+    return task

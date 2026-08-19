@@ -1,7 +1,7 @@
 from enum import Enum
 from datetime import date, time
 
-from sqlalchemy import Date, ForeignKey, String, Text, Time
+from sqlalchemy import Date, ForeignKey, String, Text, Time, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -61,3 +61,13 @@ class Task(Base):
         "User",
         foreign_keys=[helper_id],
     )
+    
+    senior_confirmed: Mapped[bool] = mapped_column(
+    Boolean,
+    default=False,
+    )
+
+    helper_confirmed: Mapped[bool] = mapped_column(
+    Boolean,
+    default=False,
+    )   
