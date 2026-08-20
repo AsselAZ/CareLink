@@ -5,6 +5,7 @@ import app.models
 from app.api.users import router as users_router
 from app.api.auth import router as auth_router
 from app.api.tasks import router as tasks_router
+from app.api.ratings import router as ratings_router
 
 # Erstellt unsere FastApi Anwendung.
 # Über dieses Objekt werden später alle Api Routen erreichbar sein
@@ -23,4 +24,4 @@ def root():
 app.include_router(users_router)
 app.include_router(auth_router)
 app.include_router(tasks_router)
-
+app.include_router(ratings_router)
