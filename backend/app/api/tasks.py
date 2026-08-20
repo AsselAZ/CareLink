@@ -267,3 +267,31 @@ def confirm_task_as_senior(
     db.refresh(task)
 
     return task
+
+@router.get("/helper/done/mine")
+def get_my_done_tasks_as_helper(
+    current_user: User = Depends(require_helper),
+    db: Session = Depends(get_db),
+):
+    tasks = db.scalars(
+        select(Task).where(
+            Task.helper_id == current_user.id,
+            Task.status == TaskStatus.DONE.value,
+        )
+    ).all()
+
+    return tasks
+
+@router.get("/senior/done/mine")
+def get_my_done_tasks_as_senior(
+    current_user: User = Depends(require_senior),
+    db: Session = Depends(get_db),
+):
+    tasks = db.scalars(
+        select(Task).where(
+            Task.senior_id == current_user.id,
+            Task.status == TaskStatus.DONE.value,
+        )
+    ).all()
+
+    return tasks
