@@ -94,3 +94,31 @@ def get_user_ratings(
     ).all()
 
     return ratings
+
+#ratings summary for a specific user also durchschnitt
+@router.get("/users/{user_id}/rating-summary")
+def get_user_rating_summary(
+    user_id: int,
+    db: Session = Depends(get_db),
+):
+    ratings = db.scalars(
+        select(Rating).where(
+            Rating.reviewed_user_id == user_id
+        )
+    ).all()
+
+    if not ratings:
+        return {
+            "user_id": user_id,
+            "average_rating": None,
+            "rating_count": 0,
+        }
+
+    total = sum(rating.stars for rating in ratings)
+    average = total / len(ratings)
+
+    return {
+        "user_id": user_id,
+        "average_rating": round(average, 2),
+        "rating_count": len(ratings),
+    }
