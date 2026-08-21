@@ -6,6 +6,7 @@ from app.db.database import get_db
 from app.models.task import Task, TaskStatus
 from app.models.user import User
 from app.schemas.task import TaskCreate, TaskCategory
+from app.models.notification import Notification
 
 from sqlalchemy import select
 
@@ -144,6 +145,13 @@ def accept_task(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Dieser Task ist nicht mehr offen.",
         )
+
+    # Benachrichtigung an den Senior senden
+    notification = Notification(
+        user_id=task.senior_id,
+        message=f"Ein Helfer hat Ihren Task '{task.title}' angenommen.",
+    )
+    db.add(notification)
 
     # Eingeloggten Helfer eintragen
     task.helper_id = current_user.id
