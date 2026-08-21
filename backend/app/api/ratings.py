@@ -11,7 +11,6 @@ from app.schemas.rating import RatingCreate
 
 
 router = APIRouter(
-    prefix="/tasks",
     tags=["Ratings"],
 )
 
@@ -81,3 +80,17 @@ def create_rating(
     db.refresh(new_rating)
 
     return new_rating
+
+#ratings for a specific user all of them
+@router.get("/users/{user_id}/ratings")
+def get_user_ratings(
+    user_id: int,
+    db: Session = Depends(get_db),
+):
+    ratings = db.scalars(
+        select(Rating).where(
+            Rating.reviewed_user_id == user_id
+        )
+    ).all()
+
+    return ratings
