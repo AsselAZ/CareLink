@@ -202,8 +202,7 @@ def get_my_tasks(
 
     return tasks
 
-# Diese Route ist nur für eingeloggte Senioren zugänglich
-@router.post("/{task_id}/confirm/helper")
+# Diese Route ist nur für eingeloggte Senioren zugänglich@router.post("/{task_id}/confirm/helper")
 def confirm_task_as_helper(
     task_id: int,
     current_user: User = Depends(require_helper),
@@ -231,8 +230,23 @@ def confirm_task_as_helper(
 
     task.helper_confirmed = True
 
+    # Nur wenn der Senior bereits bestätigt hat,
+    # ist der Task jetzt wirklich abgeschlossen.
     if task.senior_confirmed:
         task.status = TaskStatus.DONE.value
+
+        senior_notification = Notification(
+            user_id=task.senior_id,
+            message=f"Der Task '{task.title}' wurde erfolgreich abgeschlossen.",
+        )
+
+        helper_notification = Notification(
+            user_id=task.helper_id,
+            message=f"Der Task '{task.title}' wurde erfolgreich abgeschlossen.",
+        )
+
+        db.add(senior_notification)
+        db.add(helper_notification)
 
     db.commit()
     db.refresh(task)
@@ -268,8 +282,22 @@ def confirm_task_as_senior(
 
     task.senior_confirmed = True
 
+    # Wenn der Helfer schon bestätigt hat, ist die Aufgabe abgeschlossen
     if task.helper_confirmed:
         task.status = TaskStatus.DONE.value
+
+        senior_notification = Notification(
+            user_id=task.senior_id,
+            message=f"Der Task '{task.title}' wurde erfolgreich abgeschlossen.",
+        )
+
+        helper_notification = Notification(
+            user_id=task.helper_id,
+            message=f"Der Task '{task.title}' wurde erfolgreich abgeschlossen.",
+        )
+
+        db.add(senior_notification)
+        db.add(helper_notification)
 
     db.commit()
     db.refresh(task)
