@@ -202,7 +202,8 @@ def get_my_tasks(
 
     return tasks
 
-# Diese Route ist nur für eingeloggte Senioren zugänglich@router.post("/{task_id}/confirm/helper")
+# Diese Route ist nur für eingeloggte Senioren zugänglich
+@router.post("/{task_id}/confirm/helper")
 def confirm_task_as_helper(
     task_id: int,
     current_user: User = Depends(require_helper),
