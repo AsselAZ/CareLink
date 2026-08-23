@@ -377,45 +377,95 @@ def get_my_done_tasks_as_senior(
     ).all()
 
     return tasks
-
 @router.post("/{task_id}/cancel")
 def cancel_task(
     task_id: int,
     current_user: User = Depends(require_senior),
     db: Session = Depends(get_db),
 ):
-    # Task anhand der ID suchen
     task = db.get(Task, task_id)
 
-    # Prüfen, ob der Task existiert
     if task is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Task wurde nicht gefunden.",
         )
 
-    # Nur der Senior, dem der Task gehört, darf ihn abbrechen
     if task.senior_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Dieser Task gehört nicht zu Ihnen.",
         )
 
-    # Erledigte Tasks sollen nicht mehr abgebrochen werden
     if task.status == TaskStatus.DONE.value:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Ein erledigter Task kann nicht mehr abgebrochen werden.",
         )
 
-    # Bereits abgebrochene Tasks nicht erneut abbrechen
     if task.status == TaskStatus.CANCELLED.value:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Dieser Task wurde bereits abgebrochen.",
         )
 
+    # Wenn ein Helper beteiligt ist -> Helper informieren/benarichtigen
+    if task.helper_id is not None:
+        notification = Notification(
+            user_id=task.helper_id,
+            message=f"Der Senior hat den Task '{task.title}' storniert.",
+        )
+
+        db.add(notification)
+
     task.status = TaskStatus.CANCELLED.value
+
+    db.commit()
+    db.refresh(task)
+
+    return task
+
+@router.post("/{task_id}/withdraw")
+def withdraw_from_task(
+    task_id: int,
+    current_user: User = Depends(require_helper),
+    db: Session = Depends(get_db),
+):
+    task = db.get(Task, task_id)
+
+    if task is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task wurde nicht gefunden.",
+        )
+
+    # Prüfen: Ist genau dieser Helper dem Task zugeordnet?
+    if task.helper_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Dieser Task wurde nicht von Ihnen angenommen.",
+        )
+
+    # Rückzug nur bei einem angenommenen Task
+    if task.status != TaskStatus.ACCEPTED.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Sie können sich nur von einem angenommenen Task zurückziehen.",
+        )
+
+    # Senior informieren
+    notification = Notification(
+        user_id=task.senior_id,
+        message=f"Der Helfer kann den Task '{task.title}' nicht mehr übernehmen. Der Task ist wieder offen.",
+    )
+
+    db.add(notification)
+
+    # Helper entfernen und Task wieder freigeben
+    task.helper_id = None
+    task.helper_confirmed = False
+    task.senior_confirmed = False
+    task.status = TaskStatus.OPEN.value
 
     db.commit()
     db.refresh(task)
