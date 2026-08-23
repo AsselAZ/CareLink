@@ -22,6 +22,7 @@ class TaskStatus(str, Enum):
     OPEN = "open"
     ACCEPTED = "accepted"
     DONE = "done"
+    CANCELLED = "cancelled"
 
 
 # Eine Hilfeanfrage erstellen

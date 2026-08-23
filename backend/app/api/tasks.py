@@ -167,6 +167,7 @@ def accept_task(
 
 @router.get("/open")
 def get_open_tasks(
+    max_distance: float | None = None,
     current_user: User = Depends(require_helper),
     db: Session = Depends(get_db),
 ):
@@ -193,6 +194,14 @@ def get_open_tasks(
                 task.senior.address.latitude,
                 task.senior.address.longitude,
             )
+            # Wenn eine maximale Distanz angegeben ist, prüfen,
+            #  ob der Task innerhalb dieser Distanz liegt  
+        if (
+            max_distance is not None
+            and distance_km is not None
+            and distance_km > max_distance
+        ):
+            continue
 
         result.append(
             {
@@ -368,3 +377,47 @@ def get_my_done_tasks_as_senior(
     ).all()
 
     return tasks
+
+@router.post("/{task_id}/cancel")
+def cancel_task(
+    task_id: int,
+    current_user: User = Depends(require_senior),
+    db: Session = Depends(get_db),
+):
+    # Task anhand der ID suchen
+    task = db.get(Task, task_id)
+
+    # Prüfen, ob der Task existiert
+    if task is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task wurde nicht gefunden.",
+        )
+
+    # Nur der Senior, dem der Task gehört, darf ihn abbrechen
+    if task.senior_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Dieser Task gehört nicht zu Ihnen.",
+        )
+
+    # Erledigte Tasks sollen nicht mehr abgebrochen werden
+    if task.status == TaskStatus.DONE.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Ein erledigter Task kann nicht mehr abgebrochen werden.",
+        )
+
+    # Bereits abgebrochene Tasks nicht erneut abbrechen
+    if task.status == TaskStatus.CANCELLED.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Dieser Task wurde bereits abgebrochen.",
+        )
+
+    task.status = TaskStatus.CANCELLED.value
+
+    db.commit()
+    db.refresh(task)
+
+    return task
