@@ -8,6 +8,8 @@ from app.models.rating import Rating
 from app.models.task import Task, TaskStatus
 from app.models.user import User
 from app.schemas.rating import RatingCreate
+from app.models.notification import Notification
+from app.models import notification
 
 
 router = APIRouter(
@@ -76,6 +78,12 @@ def create_rating(
     )
 
     db.add(new_rating)
+    notification = Notification(
+    user_id=reviewed_user_id,
+    message=f"Sie haben für den Task '{task.title}' eine neue Bewertung erhalten.",
+)
+
+    db.add(notification)
     db.commit()
     db.refresh(new_rating)
 

@@ -7,6 +7,7 @@ from app.models.task import Task, TaskStatus
 from app.models.user import User
 from app.schemas.task import TaskCreate, TaskCategory
 from app.models.notification import Notification
+from app.services.distance import calculate_distance
 
 from sqlalchemy import select
 
@@ -173,7 +174,42 @@ def get_open_tasks(
         select(Task).where(Task.status == TaskStatus.OPEN.value)
     ).all()
 
-    return open_tasks
+    result = []
+
+    for task in open_tasks:
+        distance_km = None
+
+        if (
+            current_user.address
+            and current_user.address.latitude is not None
+            and current_user.address.longitude is not None
+            and task.senior.address
+            and task.senior.address.latitude is not None
+            and task.senior.address.longitude is not None
+        ):
+            distance_km = calculate_distance(
+                current_user.address.latitude,
+                current_user.address.longitude,
+                task.senior.address.latitude,
+                task.senior.address.longitude,
+            )
+
+        result.append(
+            {
+                "id": task.id,
+                "title": task.title,
+                "description": task.description,
+                "category": task.category,
+                "status": task.status,
+                "task_date": task.task_date,
+                "start_time": task.start_time,
+                "end_time": task.end_time,
+                "senior_id": task.senior_id,
+                "distance_km": distance_km,
+            }
+        )
+
+    return result
 
 @router.get("/accepted/mine")
 def get_my_accepted_tasks(
