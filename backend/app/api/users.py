@@ -7,6 +7,7 @@ from app.db.database import get_db
 from app.models.user import User
 from app.models.address import Address
 from app.schemas.user import UserCreate, UserProfileUpdate
+from app.services.geocoding import geocode_address
 from app.api.dependencies import (
     get_current_user,
     require_helper,
@@ -102,17 +103,41 @@ def update_my_profile(
         current_user.last_name = profile_data.last_name
 
     if profile_data.address is not None:
+        # Aus der normalen Adresse automatisch GPS-Koordinaten ermitteln
+        coordinates = geocode_address(
+            profile_data.address.street,
+            profile_data.address.house_number,
+            profile_data.address.postal_code,
+            profile_data.address.city,
+        )
+
+        latitude = None
+        longitude = None
+
+        # Wenn Nominatim die Adresse gefunden hat,
+        # bekommen wir Latitude und Longitude zurück
+        if coordinates is not None:
+            latitude, longitude = coordinates
+
+        # Wenn der Nutzer schon eine Adresse besitzt,
+        # werden die vorhandenen Daten aktualisiert
         if current_user.address:
             current_user.address.street = profile_data.address.street
             current_user.address.house_number = profile_data.address.house_number
             current_user.address.postal_code = profile_data.address.postal_code
             current_user.address.city = profile_data.address.city
+            current_user.address.latitude = latitude
+            current_user.address.longitude = longitude
+
+        # Wenn noch keine Adresse existiert, wird eine neue erstellt
         else:
             new_address = Address(
                 street=profile_data.address.street,
                 house_number=profile_data.address.house_number,
                 postal_code=profile_data.address.postal_code,
                 city=profile_data.address.city,
+                latitude=latitude,
+                longitude=longitude,
                 user_id=current_user.id,
             )
 
