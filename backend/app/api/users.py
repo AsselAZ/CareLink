@@ -89,21 +89,53 @@ def helper_test(
         "user_id": current_user.id,
     }
 
+# Eigenes Profil anzeigen
+@router.get("/me/profile")
+def get_my_profile(
+    current_user: User = Depends(get_current_user),
+):
+    # Prüfen, ob der Nutzer eine Adresse besitzt
+    if current_user.address is None:
+        address = None
+    else:
+        address = {
+            "street": current_user.address.street,
+            "house_number": current_user.address.house_number,
+            "postal_code": current_user.address.postal_code,
+            "city": current_user.address.city,
+            "latitude": current_user.address.latitude,
+            "longitude": current_user.address.longitude,
+        }
+
+    return {
+        "user_id": current_user.id,
+        "first_name": current_user.first_name,
+        "last_name": current_user.last_name,
+        "email": current_user.email,
+        "role": current_user.role,
+        "address": address,
+    }
+
+
+# Eigenes Profil bearbeiten
 @router.put("/me/profile")
 def update_my_profile(
     profile_data: UserProfileUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Nur die Felder ändern, die wirklich mitgeschickt wurden
+    # Vorname nur ändern, wenn er mitgeschickt wurde
     if profile_data.first_name is not None:
         current_user.first_name = profile_data.first_name
 
+    # Nachname nur ändern, wenn er mitgeschickt wurde
     if profile_data.last_name is not None:
         current_user.last_name = profile_data.last_name
 
+    # Adresse nur ändern, wenn eine Adresse mitgeschickt wurde
     if profile_data.address is not None:
-        # Aus der normalen Adresse automatisch GPS-Koordinaten ermitteln
+
+        # Adresse über Nominatim in GPS-Koordinaten umwandeln
         coordinates = geocode_address(
             profile_data.address.street,
             profile_data.address.house_number,
@@ -114,13 +146,11 @@ def update_my_profile(
         latitude = None
         longitude = None
 
-        # Wenn Nominatim die Adresse gefunden hat,
-        # bekommen wir Latitude und Longitude zurück
+        # Falls Nominatim die Adresse gefunden hat
         if coordinates is not None:
             latitude, longitude = coordinates
 
-        # Wenn der Nutzer schon eine Adresse besitzt,
-        # werden die vorhandenen Daten aktualisiert
+        # Nutzer besitzt bereits eine Adresse
         if current_user.address:
             current_user.address.street = profile_data.address.street
             current_user.address.house_number = profile_data.address.house_number
@@ -129,7 +159,7 @@ def update_my_profile(
             current_user.address.latitude = latitude
             current_user.address.longitude = longitude
 
-        # Wenn noch keine Adresse existiert, wird eine neue erstellt
+        # Nutzer besitzt noch keine Adresse
         else:
             new_address = Address(
                 street=profile_data.address.street,
@@ -147,5 +177,10 @@ def update_my_profile(
     db.refresh(current_user)
 
     return {
-        "message": "Profil wurde aktualisiert."
+        "message": "Profil wurde aktualisiert.",
+        "user_id": current_user.id,
+        "first_name": current_user.first_name,
+        "last_name": current_user.last_name,
+        "email": current_user.email,
+        "role": current_user.role,
     }
