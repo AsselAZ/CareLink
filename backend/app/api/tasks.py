@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.dependencies import require_senior, require_helper
+from app.api.dependencies import get_current_user, require_senior, require_helper
 from app.db.database import get_db
 from app.models.task import Task, TaskStatus
 from app.models.user import User
@@ -23,6 +23,9 @@ router = APIRouter(
     prefix="/tasks",
     tags=["Tasks"],
 )
+
+
+
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_task(
@@ -123,6 +126,9 @@ def create_task(
         "senior_id": new_task.senior_id,
     }
 
+
+
+
 # Diese Route ist nur für eingeloggte Helfer zugänglich
 @router.post("/{task_id}/accept")
 def accept_task(
@@ -164,6 +170,9 @@ def accept_task(
     db.refresh(task)
 
     return task
+
+
+
 
 @router.get("/open")
 def get_open_tasks(
@@ -220,6 +229,9 @@ def get_open_tasks(
 
     return result
 
+
+
+
 @router.get("/accepted/mine")
 def get_my_accepted_tasks(
     current_user: User = Depends(require_helper),
@@ -234,6 +246,8 @@ def get_my_accepted_tasks(
 
     return tasks
 
+
+
 @router.get("/senior/mine")
 def get_my_tasks(
     current_user: User = Depends(require_senior),
@@ -246,6 +260,9 @@ def get_my_tasks(
     ).all()
 
     return tasks
+
+
+
 
 # Diese Route ist nur für eingeloggte Senioren zugänglich
 @router.post("/{task_id}/confirm/helper")
@@ -299,6 +316,9 @@ def confirm_task_as_helper(
 
     return task
 
+
+
+
 # Diese Route ist nur für eingeloggte Senioren zugänglich
 @router.post("/{task_id}/confirm/senior")
 def confirm_task_as_senior(
@@ -350,6 +370,9 @@ def confirm_task_as_senior(
 
     return task
 
+
+
+
 @router.get("/helper/done/mine")
 def get_my_done_tasks_as_helper(
     current_user: User = Depends(require_helper),
@@ -364,6 +387,9 @@ def get_my_done_tasks_as_helper(
 
     return tasks
 
+
+
+
 @router.get("/senior/done/mine")
 def get_my_done_tasks_as_senior(
     current_user: User = Depends(require_senior),
@@ -377,6 +403,9 @@ def get_my_done_tasks_as_senior(
     ).all()
 
     return tasks
+
+
+
 @router.post("/{task_id}/cancel")
 def cancel_task(
     task_id: int,
@@ -425,6 +454,9 @@ def cancel_task(
 
     return task
 
+
+
+
 @router.post("/{task_id}/withdraw")
 def withdraw_from_task(
     task_id: int,
@@ -471,3 +503,103 @@ def withdraw_from_task(
     db.refresh(task)
 
     return task
+
+
+
+@router.get("/{task_id}")
+def get_task(
+    task_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    task = db.get(Task, task_id)
+
+    if task is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task wurde nicht gefunden.",
+        )
+
+    # Offene Tasks dürfen Helper sehen.
+    # Bei angenommenen/erledigten Tasks dürfen nur die beteiligten Nutzer zugreifen.
+    if task.status != TaskStatus.OPEN.value:
+        if (
+            current_user.id != task.senior_id
+            and current_user.id != task.helper_id
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Sie sind nicht an diesem Task beteiligt.",
+            )
+
+    details = None
+
+    if task.category == TaskCategory.SHOPPING.value:
+        shopping_details = db.scalar(
+            select(ShoppingDetails).where(
+                ShoppingDetails.task_id == task.id
+            )
+        )
+
+        if shopping_details:
+            details = {
+                "shopping_list": shopping_details.shopping_list,
+                "store": shopping_details.store,
+            }
+
+    elif task.category == TaskCategory.APPOINTMENT.value:
+        appointment_details = db.scalar(
+            select(AppointmentDetails).where(
+                AppointmentDetails.task_id == task.id
+            )
+        )
+
+        if appointment_details:
+            details = {
+                "location": appointment_details.location,
+                "appointment_type": appointment_details.appointment_type,
+            }
+
+    elif task.category == TaskCategory.FURNITURE.value:
+        furniture_details = db.scalar(
+            select(FurnitureDetails).where(
+                FurnitureDetails.task_id == task.id
+            )
+        )
+
+        if furniture_details:
+            details = {
+                "weight_kg": furniture_details.weight_kg,
+                "floor": furniture_details.floor,
+                "elevator_available": furniture_details.elevator_available,
+            }
+
+    elif task.category == TaskCategory.CRAFT.value:
+        craft_details = db.scalar(
+            select(CraftDetails).where(
+                CraftDetails.task_id == task.id
+            )
+        )
+
+        if craft_details:
+            details = {
+                "work_type": craft_details.work_type,
+                "required_tools": craft_details.required_tools,
+                "difficulty": craft_details.difficulty,
+            }
+
+    return {
+        "id": task.id,
+        "title": task.title,
+        "description": task.description,
+        "category": task.category,
+        "status": task.status,
+        "task_date": task.task_date,
+        "start_time": task.start_time,
+        "end_time": task.end_time,
+        "senior_id": task.senior_id,
+        "helper_id": task.helper_id,
+        "senior_confirmed": task.senior_confirmed,
+        "helper_confirmed": task.helper_confirmed,
+        "details": details,
+    }
