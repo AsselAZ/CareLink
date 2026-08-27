@@ -5,7 +5,7 @@ from app.api.dependencies import get_current_user, require_senior, require_helpe
 from app.db.database import get_db
 from app.models.task import Task, TaskStatus
 from app.models.user import User
-from app.schemas.task import TaskCreate, TaskCategory
+from app.schemas.task import TaskCreate, TaskCategory, TaskUpdate
 from app.models.notification import Notification
 from app.services.distance import calculate_distance
 
@@ -602,4 +602,175 @@ def get_task(
         "senior_confirmed": task.senior_confirmed,
         "helper_confirmed": task.helper_confirmed,
         "details": details,
+    }
+
+# Update a task
+@router.put("/{task_id}")
+def update_task(
+    task_id: int,
+    task_data: TaskUpdate,
+    current_user: User = Depends(require_senior),
+    db: Session = Depends(get_db),
+):
+    # Task anhand der übergebenen ID aus der Datenbank laden
+    task = db.get(Task, task_id)
+
+    # Abbrechen, wenn kein Task mit dieser ID existiert
+    if task is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task wurde nicht gefunden.",
+        )
+
+    # Sicherstellen, dass nur der Senior den eigenen Task bearbeiten kann
+    if task.senior_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Dieser Task gehört nicht zu Ihnen.",
+        )
+
+    # Änderungen sind nur möglich, solange noch kein Helper
+    # den Task angenommen hat
+    if task.status != TaskStatus.OPEN.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nur offene Tasks können bearbeitet werden.",
+        )
+
+    # Allgemeine Task-Daten aktualisieren
+    # Es werden nur Felder geändert, die tatsächlich
+    # vom Nutzer mitgeschickt wurden.
+
+    if task_data.title is not None:
+        task.title = task_data.title
+
+    if task_data.description is not None:
+        task.description = task_data.description
+
+    if task_data.task_date is not None:
+        task.task_date = task_data.task_date
+
+    if task_data.start_time is not None:
+        task.start_time = task_data.start_time
+
+    if task_data.end_time is not None:
+        task.end_time = task_data.end_time
+
+    # Kategoriespezifische Daten aktualisieren
+    # Je nach Kategorie liegen die Zusatzinformationen
+    # in einer eigenen Detailtabelle
+
+    # Einkaufsanfrage
+    if (
+        task.category == TaskCategory.SHOPPING.value
+        and task_data.shopping_details is not None
+    ):
+        details = db.scalar(
+            select(ShoppingDetails).where(
+                ShoppingDetails.task_id == task.id
+            )
+        )
+
+        # Nur übermittelte Einkaufsdetails überschreiben
+        if details is not None:
+            if task_data.shopping_details.shopping_list is not None:
+                details.shopping_list = (
+                    task_data.shopping_details.shopping_list
+                )
+
+            if task_data.shopping_details.store is not None:
+                details.store = task_data.shopping_details.store
+
+    # Terminanfrage
+    elif (
+        task.category == TaskCategory.APPOINTMENT.value
+        and task_data.appointment_details is not None
+    ):
+        details = db.scalar(
+            select(AppointmentDetails).where(
+                AppointmentDetails.task_id == task.id
+            )
+        )
+
+        # Nur übermittelte Termindetails überschreiben
+        if details is not None:
+            if task_data.appointment_details.location is not None:
+                details.location = (
+                    task_data.appointment_details.location
+                )
+
+            if task_data.appointment_details.appointment_type is not None:
+                details.appointment_type = (
+                    task_data.appointment_details.appointment_type
+                )
+
+    # Möbeltransport
+    elif (
+        task.category == TaskCategory.FURNITURE.value
+        and task_data.furniture_details is not None
+    ):
+        details = db.scalar(
+            select(FurnitureDetails).where(
+                FurnitureDetails.task_id == task.id
+            )
+        )
+
+        # Nur übermittelte Möbeldetails überschreiben
+        if details is not None:
+            if task_data.furniture_details.weight_kg is not None:
+                details.weight_kg = (
+                    task_data.furniture_details.weight_kg
+                )
+
+            if task_data.furniture_details.floor is not None:
+                details.floor = (
+                    task_data.furniture_details.floor
+                )
+
+            if task_data.furniture_details.elevator_available is not None:
+                details.elevator_available = (
+                    task_data.furniture_details.elevator_available
+                )
+
+    # Handwerkliche Anfrage
+    elif (
+        task.category == TaskCategory.CRAFT.value
+        and task_data.craft_details is not None
+    ):
+        details = db.scalar(
+            select(CraftDetails).where(
+                CraftDetails.task_id == task.id
+            )
+        )
+
+        # Nur übermittelte Handwerksdetails überschreiben
+        if details is not None:
+            if task_data.craft_details.work_type is not None:
+                details.work_type = (
+                    task_data.craft_details.work_type
+                )
+
+            if task_data.craft_details.required_tools is not None:
+                details.required_tools = (
+                    task_data.craft_details.required_tools
+                )
+
+            if task_data.craft_details.difficulty is not None:
+                details.difficulty = (
+                    task_data.craft_details.difficulty
+                )
+
+    # Alle Änderungen gemeinsam dauerhaft in PostgreSQL speichern
+    db.commit()
+
+    # Task erneut aus der Datenbank laden,
+    # damit die aktuellen Werte zurückgegeben werden
+    db.refresh(task)
+
+    return {
+        "message": "Task wurde aktualisiert.",
+        "id": task.id,
+        "title": task.title,
+        "status": task.status,
+        "category": task.category,
     }

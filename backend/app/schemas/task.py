@@ -36,7 +36,7 @@ class CraftDetailsCreate(BaseModel):
     required_tools: str | None = None
     difficulty: str | None = None
 
-    # Daten, die beim Erstellen einer Hilfeanfrage erwartet werden
+# Daten, die beim Erstellen einer Hilfeanfrage erwartet werden
 class TaskCreate(BaseModel):
     title: str = Field(min_length=3, max_length=150)
     description: str | None = None
@@ -49,3 +49,36 @@ class TaskCreate(BaseModel):
     appointment_details: AppointmentDetailsCreate | None = None
     furniture_details: FurnitureDetailsCreate | None = None
     craft_details: CraftDetailsCreate | None = None
+
+class ShoppingDetailsUpdate(BaseModel):
+    shopping_list: str | None = None
+    store: str | None = None
+
+
+class AppointmentDetailsUpdate(BaseModel):
+    location: str | None = None
+    appointment_type: str | None = None
+
+
+class FurnitureDetailsUpdate(BaseModel):
+    weight_kg: float | None = Field(default=None, ge=0)
+    floor: int | None = None
+    elevator_available: bool | None = None
+
+
+class CraftDetailsUpdate(BaseModel):
+    work_type: str | None = None
+    required_tools: str | None = None
+    difficulty: str | None = None
+
+class TaskUpdate(BaseModel):
+    title: str | None = Field(default=None, min_length=3, max_length=150)
+    description: str | None = None
+    task_date: date | None = None
+    start_time: time | None = None
+    end_time: time | None = None
+
+    shopping_details: ShoppingDetailsUpdate | None = None
+    appointment_details: AppointmentDetailsUpdate | None = None
+    furniture_details: FurnitureDetailsUpdate | None = None
+    craft_details: CraftDetailsUpdate | None = None
