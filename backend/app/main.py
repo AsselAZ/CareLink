@@ -1,6 +1,7 @@
 from fastapi import FastAPI
-
+from fastapi.middleware.cors import CORSMiddleware
 import app.models
+
 
 from app.api.users import router as users_router
 from app.api.auth import router as auth_router
@@ -14,6 +15,16 @@ from app.api.messages import router as messages_router
 
 app = FastAPI(
     title="CareLink API"
+)
+
+# Fügt CORS-Middleware hinzu, um Cross-Origin-Requests zu erlauben. also locla : 3000 undd local : 8000
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    # get and post requests are allowed put and delete are not allowed
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Ein einfacher Test Endpunkt zu prüfen,
