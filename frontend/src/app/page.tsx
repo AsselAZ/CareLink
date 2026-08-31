@@ -56,14 +56,14 @@ export default function Home() {
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
               <Link
-                href="/register"
+                href="/senior/start"
                 className="rounded-2xl bg-amber-700 px-8 py-5 text-center text-xl font-bold text-white shadow-lg shadow-amber-900/10 transition hover:bg-amber-800 focus:outline-none focus:ring-4 focus:ring-amber-300"
               >
                 Ich benötige Hilfe
               </Link>
 
               <Link
-                href="/register"
+                href="/helper/start"
                 className="rounded-2xl border-2 border-slate-900 bg-white px-8 py-5 text-center text-xl font-bold text-slate-950 transition hover:bg-stone-100"
               >
                 Ich möchte helfen
