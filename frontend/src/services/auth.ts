@@ -31,3 +31,33 @@ export async function login(data: LoginData):Promise<LoginResponse>  {
 
   return response.json();
 }
+
+
+// Daten des aktuell eingeloggten Nutzers
+export type CurrentUser = {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: string;
+};
+
+// Ruft die Daten des eingeloggten Nutzers über den gespeicherten JWT ab
+export async function getCurrentUser(
+  token: string
+): Promise<CurrentUser> {
+  const response = await fetch("http://127.0.0.1:8000/users/me", {
+    method: "GET",
+
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  // Ohne gültigen Token darf das Backend die Nutzerdaten nicht zurückgeben
+  if (!response.ok) {
+    throw new Error("Nutzerdaten konnten nicht geladen werden.");
+  }
+
+  return response.json();
+}

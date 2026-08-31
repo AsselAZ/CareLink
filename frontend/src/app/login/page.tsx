@@ -1,29 +1,58 @@
 //the page is interactive for useState
 "use client";
-import { login } from "@/services/auth";
+import {getCurrentUser, login } from "@/services/auth";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 
 export default function LoginPage() {
-  // useState stores values that can change while the user interacts with the page.
+  // Next.js Router für die Weiterleitung nach erfolgreichem Login.
+  const router = useRouter();
+
+  // Aktuelle Werte der beiden Eingabefelder.
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
-  event.preventDefault();
+    // Verhindert, dass das Formular die Seite neu lädt.
+    event.preventDefault();
 
-  try {
-    //wait for the login function to complete and return data
-    const data = await login({
-      email,
-      password,
-    });
+    try {
+      // Sendet E-Mail und Passwort an das Backend.
+      const data = await login({
+        email,
+        password,
+      });
 
-    console.log("Login erfolgreich:", data);
-  } catch (error) {
-    console.error("Login fehlgeschlagen:", error);
+      // JWT vorerst im Browser speichern.
+      // Für die finale Version prüfen wir später HttpOnly Cookies.
+      localStorage.setItem("access_token", data.access_token);
+
+      // Mit dem JWT laden wir den Nutzer und erfahren dadurch seine Rolle.
+      const user = await getCurrentUser(data.access_token);
+
+      console.log("Eingeloggter Nutzer:", user);
+
+      // Senioren werden in den Senior-Bereich weitergeleitet.
+      if (user.role === "senior") {
+        router.push("/senior");
+        return;
+      }
+
+      // Helfer werden in den Helper-Bereich weitergeleitet.
+      if (user.role === "helper") {
+        router.push("/helper");
+        return;
+      }
+
+      // Sicherheitsfall für eine unerwartete Rolle.
+      console.error("Unbekannte Benutzerrolle:", user.role);
+    } catch (error) {
+      // Wird später durch eine eigene sichtbare CareLink-Fehlermeldung ersetzt
+      console.error("Login fehlgeschlagen:", error);
+    }
   }
-}
+
 
   return (
     <main className="min-h-screen bg-stone-50 px-6 py-12">
