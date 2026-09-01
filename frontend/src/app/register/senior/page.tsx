@@ -7,30 +7,45 @@ export default function SeniorRegisterPage() {
     // Bestimmt, welcher Registrierungsschritt angezeigt wird.
     const [step, setStep] = useState(1);
 
-    // Persönliche Angaben aus Schritt 1.
+    // Persönliche Angaben
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
 
-    // Fehlermeldungen für die einzelnen Eingabefelder.
+    // Fehlermeldungen für die einzelnen Eingabefelder
     const [firstNameError, setFirstNameError] = useState("");
     const [lastNameError, setLastNameError] = useState("");
     const [emailError, setEmailError] = useState("");
 
-    // Passwortdaten aus Schritt 2.
+    const [birthDate, setBirthDate] = useState("");
+    const [birthDateError, setBirthDateError] = useState("");
+
+    // Passwortdaten 
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
-    // Fehlermeldungen für die Passwortfelder.
+    // Fehlermeldungen für die Passwortfelder
     const [passwordError, setPasswordError] = useState("");
     const [confirmPasswordError, setConfirmPasswordError] = useState("");
+
+    // Adressdaten 
+    const [street, setStreet] = useState("");
+    const [houseNumber, setHouseNumber] = useState("");
+    const [postalCode, setPostalCode] = useState("");
+    const [city, setCity] = useState("");
+
+    // Fehlermeldungen für die Adressfelder
+    const [streetError, setStreetError] = useState("");
+    const [houseNumberError, setHouseNumberError] = useState("");
+    const [postalCodeError, setPostalCodeError] = useState("");
+    const [cityError, setCityError] = useState("");
 
     function validateFirstName(value: string) {
         if (!value.trim()) {
             return "Bitte geben Sie Ihren Vornamen ein.";
         }
 
-        // Erlaubt Buchstaben, Umlaute, Leerzeichen und Bindestriche.
+        // Erlaubt Buchstaben, Umlaute, Leerzeichen und Bindestriche. 
         if (!/^[A-Za-zÄÖÜäöüß\s-]+$/.test(value)) {
             return "Der Vorname darf nur Buchstaben enthalten.";
         }
@@ -46,6 +61,14 @@ export default function SeniorRegisterPage() {
         // Erlaubt Buchstaben, Umlaute, Leerzeichen und Bindestriche.
         if (!/^[A-Za-zÄÖÜäöüß\s-]+$/.test(value)) {
             return "Der Nachname darf nur Buchstaben enthalten.";
+        }
+
+        return "";
+    }
+
+    function validateBirthDate(value: string) {
+        if (!value.trim()) {
+            return "Bitte geben Sie Ihr Geburtsdatum ein.";
         }
 
         return "";
@@ -87,21 +110,64 @@ export default function SeniorRegisterPage() {
         return "";
     }
 
+    function validateStreet(value: string) {
+        if (!value.trim()) {
+            return "Bitte geben Sie Ihre Straße ein.";
+        }
+
+        return "";
+    }
+
+    function validateHouseNumber(value: string) {
+        if (!value.trim()) {
+            return "Bitte geben Sie Ihre Hausnummer ein.";
+        }
+
+        return "";
+    }
+
+    function validatePostalCode(value: string) {
+        if (!value.trim()) {
+            return "Bitte geben Sie Ihre Postleitzahl ein.";
+        }
+
+        if (!/^\d{5}$/.test(value)) {
+            return "Die Postleitzahl muss aus 5 Ziffern bestehen.";
+        }
+
+        return "";
+    }
+
+    function validateCity(value: string) {
+        if (!value.trim()) {
+            return "Bitte geben Sie Ihre Stadt ein.";
+        }
+
+        if (!/^[A-Za-zÄÖÜäöüß\s-]+$/.test(value)) {
+            return "Die Stadt darf nur Buchstaben enthalten.";
+        }
+
+        return "";
+    }
+
     function goToNextStep() {
         // Prüft alle Felder, bevor der nächste Schritt geöffnet wird.
         const newFirstNameError = validateFirstName(firstName);
         const newLastNameError = validateLastName(lastName);
         const newEmailError = validateEmail(email);
+        const newBirthDateError = validateBirthDate(birthDate);
 
         setFirstNameError(newFirstNameError);
         setLastNameError(newLastNameError);
         setEmailError(newEmailError);
+        setBirthDateError(newBirthDateError);
 
         // Solange mindestens ein Fehler vorhanden ist, bleiben wir auf Schritt 1.
         if (
             newFirstNameError ||
             newLastNameError ||
-            newEmailError
+            newEmailError ||
+            newBirthDateError
         ) {
             return;
         }
@@ -125,18 +191,45 @@ export default function SeniorRegisterPage() {
         setStep(3);
     }
 
+    function handleRegistration() {
+        // Prüft alle Adressfelder vor dem Absenden.
+        const newStreetError = validateStreet(street);
+        const newHouseNumberError = validateHouseNumber(houseNumber);
+        const newPostalCodeError = validatePostalCode(postalCode);
+        const newCityError = validateCity(city);
+
+        setStreetError(newStreetError);
+        setHouseNumberError(newHouseNumberError);
+        setPostalCodeError(newPostalCodeError);
+        setCityError(newCityError);
+
+        // Bei einem Fehler bleibt der Nutzer auf Schritt 3.
+        if (
+            newStreetError ||
+            newHouseNumberError ||
+            newPostalCodeError ||
+            newCityError
+        ) {
+            return;
+        }
+
+        // Alle Adressdaten sind gültig.
+        // Danach wird die Übersicht angezeigt.
+        setStep(4);
+    }
+
     return (
         <main className="min-h-screen bg-stone-50 px-6 py-12">
             <div className="mx-auto max-w-2xl">
                 {/* Zurück zum Senior-Einstieg */}
                 {/* Verlässt die Registrierung und führt zurück zur Senior-Startseite */}
-<Link
-  href="/senior/start"
-  className="inline-flex items-center gap-2 rounded-xl border-2 border-amber-700 bg-white px-5 py-3 text-base font-bold text-amber-800 transition hover:bg-amber-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-200"
->
-  <span aria-hidden="true">←</span>
-  Zurück zur Startseite
-</Link>
+                <Link
+                    href="/senior/start"
+                    className="inline-flex items-center gap-2 rounded-xl border-2 border-amber-700 bg-white px-5 py-3 text-base font-bold text-amber-800 transition hover:bg-amber-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-200"
+                >
+                    <span aria-hidden="true">←</span>
+                    Zurück zur Startseite
+                </Link>
 
                 {/* Überschrift der Registrierung */}
                 <header className="mt-8">
@@ -153,20 +246,22 @@ export default function SeniorRegisterPage() {
                     </p>
                 </header>
 
-                {/* Fortschrittsanzeige */}
-                <div className="mt-10">
-                    <div className="flex items-center justify-between font-semibold text-slate-700">
-                        <span>Schritt {step} von 3</span>
-                        <span>{Math.round((step / 3) * 100)} %</span>
-                    </div>
+                {/* Fortschrittsanzeige nur während der drei Eingabeschritte */}
+                {step <= 3 && (
+                    <div className="mt-10">
+                        <div className="flex items-center justify-between font-semibold text-slate-700">
+                            <span>Schritt {step} von 3</span>
+                            <span>{Math.round((step / 3) * 100)} %</span>
+                        </div>
 
-                    <div className="mt-3 h-3 overflow-hidden rounded-full bg-stone-200">
-                        <div
-                            className="h-full rounded-full bg-amber-700 transition-all"
-                            style={{ width: `${(step / 3) * 100}%` }}
-                        />
+                        <div className="mt-3 h-3 overflow-hidden rounded-full bg-stone-200">
+                            <div
+                                className="h-full rounded-full bg-amber-700 transition-all"
+                                style={{ width: `${(step / 3) * 100}%` }}
+                            />
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* Schritt 1: persönliche Angaben */}
                 {step === 1 && (
@@ -252,6 +347,39 @@ export default function SeniorRegisterPage() {
                                 )}
                             </div>
 
+                            {/* Geburtsdatum */}
+                            <div>
+                                <label htmlFor="birthdate" className="block text-lg font-semibold text-slate-800"
+
+                                >
+                                    Geburtsdatum
+                                </label>
+
+                                <input
+                                    id="birthDate"
+                                    type="date"
+                                    value={birthDate}
+                                    onChange={(event) => {
+                                        const value = event.target.value;
+
+                                        setBirthDate(value);
+
+                                        if (birthDateError) {
+                                            setBirthDateError(validateBirthDate(value));
+                                        }
+                                    }}
+                                    className={`mt-2 w-full rounded-xl border px-4 py-4 text-lg text-slate-950 outline-none ${birthDateError
+                                            ? "border-red-600 focus:border-red-600 focus:ring-2 focus:ring-red-200"
+                                            : "border-slate-300 focus:border-amber-700 focus:ring-2 focus:ring-amber-200"
+                                        }`}
+                                />
+
+                                {birthDateError && (
+                                    <p className="mt-2 font-medium text-red-700">
+                                        {birthDateError}
+                                    </p>
+                                )}
+                            </div>
                             {/* E-Mail-Adresse */}
                             <div>
                                 <label
@@ -335,8 +463,8 @@ export default function SeniorRegisterPage() {
                                         }
                                     }}
                                     className={`mt-2 w-full rounded-xl border px-4 py-4 text-lg text-slate-950 outline-none ${passwordError
-                                            ? "border-red-600 focus:border-red-600 focus:ring-2 focus:ring-red-200"
-                                            : "border-slate-300 focus:border-amber-700 focus:ring-2 focus:ring-amber-200"
+                                        ? "border-red-600 focus:border-red-600 focus:ring-2 focus:ring-red-200"
+                                        : "border-slate-300 focus:border-amber-700 focus:ring-2 focus:ring-amber-200"
                                         }`}
                                 />
 
@@ -380,8 +508,8 @@ export default function SeniorRegisterPage() {
                                         }
                                     }}
                                     className={`mt-2 w-full rounded-xl border px-4 py-4 text-lg text-slate-950 outline-none ${confirmPasswordError
-                                            ? "border-red-600 focus:border-red-600 focus:ring-2 focus:ring-red-200"
-                                            : "border-slate-300 focus:border-amber-700 focus:ring-2 focus:ring-amber-200"
+                                        ? "border-red-600 focus:border-red-600 focus:ring-2 focus:ring-red-200"
+                                        : "border-slate-300 focus:border-amber-700 focus:ring-2 focus:ring-amber-200"
                                         }`}
                                 />
 
@@ -409,6 +537,281 @@ export default function SeniorRegisterPage() {
                                 className="w-2/3 rounded-2xl bg-amber-700 px-6 py-5 text-xl font-bold text-white transition hover:bg-amber-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300"
                             >
                                 Weiter
+                            </button>
+                        </div>
+                    </section>
+                )}
+
+                {/* Schritt 3: Adresse */}
+                {step === 3 && (
+                    <section className="mt-10 rounded-3xl border border-stone-200 bg-white p-8 shadow-sm">
+                        <h2 className="text-2xl font-bold text-slate-950">
+                            Ihre Adresse
+                        </h2>
+
+                        <p className="mt-3 text-lg text-slate-600">
+                            Bitte geben Sie Ihre aktuelle Adresse ein.
+                        </p>
+
+                        <div className="mt-8 space-y-6">
+                            {/* Straße */}
+                            <div>
+                                <label
+                                    htmlFor="street"
+                                    className="block text-lg font-semibold text-slate-800"
+                                >
+                                    Straße
+                                </label>
+
+                                <input
+                                    id="street"
+                                    type="text"
+                                    value={street}
+                                    onChange={(event) => {
+                                        const value = event.target.value;
+
+                                        setStreet(value);
+
+                                        if (streetError) {
+                                            setStreetError(validateStreet(value));
+                                        }
+                                    }}
+                                    className={`mt-2 w-full rounded-xl border px-4 py-4 text-lg text-slate-950 outline-none ${streetError
+                                        ? "border-red-600 focus:border-red-600 focus:ring-2 focus:ring-red-200"
+                                        : "border-slate-300 focus:border-amber-700 focus:ring-2 focus:ring-amber-200"
+                                        }`}
+                                />
+
+                                {streetError && (
+                                    <p className="mt-2 font-medium text-red-700">
+                                        {streetError}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Hausnummer */}
+                            <div>
+                                <label
+                                    htmlFor="houseNumber"
+                                    className="block text-lg font-semibold text-slate-800"
+                                >
+                                    Hausnummer
+                                </label>
+
+                                <input
+                                    id="houseNumber"
+                                    type="text"
+                                    value={houseNumber}
+                                    onChange={(event) => {
+                                        const value = event.target.value;
+
+                                        setHouseNumber(value);
+
+                                        if (houseNumberError) {
+                                            setHouseNumberError(validateHouseNumber(value));
+                                        }
+                                    }}
+                                    className={`mt-2 w-full rounded-xl border px-4 py-4 text-lg text-slate-950 outline-none ${houseNumberError
+                                        ? "border-red-600 focus:border-red-600 focus:ring-2 focus:ring-red-200"
+                                        : "border-slate-300 focus:border-amber-700 focus:ring-2 focus:ring-amber-200"
+                                        }`}
+                                />
+
+                                {houseNumberError && (
+                                    <p className="mt-2 font-medium text-red-700">
+                                        {houseNumberError}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Postleitzahl */}
+                            <div>
+                                <label
+                                    htmlFor="postalCode"
+                                    className="block text-lg font-semibold text-slate-800"
+                                >
+                                    Postleitzahl
+                                </label>
+
+                                <input
+                                    id="postalCode"
+                                    type="text"
+                                    inputMode="numeric"
+                                    maxLength={5}
+                                    value={postalCode}
+                                    onChange={(event) => {
+                                        const value = event.target.value;
+
+                                        setPostalCode(value);
+
+                                        if (postalCodeError) {
+                                            setPostalCodeError(validatePostalCode(value));
+                                        }
+                                    }}
+                                    className={`mt-2 w-full rounded-xl border px-4 py-4 text-lg text-slate-950 outline-none ${postalCodeError
+                                        ? "border-red-600 focus:border-red-600 focus:ring-2 focus:ring-red-200"
+                                        : "border-slate-300 focus:border-amber-700 focus:ring-2 focus:ring-amber-200"
+                                        }`}
+                                />
+
+                                {postalCodeError && (
+                                    <p className="mt-2 font-medium text-red-700">
+                                        {postalCodeError}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Stadt */}
+                            <div>
+                                <label
+                                    htmlFor="city"
+                                    className="block text-lg font-semibold text-slate-800"
+                                >
+                                    Stadt
+                                </label>
+
+                                <input
+                                    id="city"
+                                    type="text"
+                                    value={city}
+                                    onChange={(event) => {
+                                        const value = event.target.value;
+
+                                        setCity(value);
+
+                                        if (cityError) {
+                                            setCityError(validateCity(value));
+                                        }
+                                    }}
+                                    className={`mt-2 w-full rounded-xl border px-4 py-4 text-lg text-slate-950 outline-none ${cityError
+                                        ? "border-red-600 focus:border-red-600 focus:ring-2 focus:ring-red-200"
+                                        : "border-slate-300 focus:border-amber-700 focus:ring-2 focus:ring-amber-200"
+                                        }`}
+                                />
+
+                                {cityError && (
+                                    <p className="mt-2 font-medium text-red-700">
+                                        {cityError}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Navigation und Abschluss der Registrierung */}
+                        <div className="mt-8 flex gap-4">
+                            <button
+                                type="button"
+                                onClick={() => setStep(2)}
+                                className="w-1/3 rounded-2xl border-2 border-slate-300 px-6 py-5 text-lg font-bold text-slate-800 hover:bg-stone-50"
+                            >
+                                Zurück
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleRegistration}
+                                className="w-2/3 rounded-2xl bg-amber-700 px-6 py-5 text-xl font-bold text-white transition hover:bg-amber-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300"
+                            >
+                                Angaben überprüfen
+                            </button>
+                        </div>
+                    </section>
+                )}
+
+                {/* Übersicht vor dem endgültigen Absenden der Registrierung */}
+                {step === 4 && (
+                    <section className="mt-10 rounded-3xl border border-stone-200 bg-white p-8 shadow-sm">
+                        <h2 className="text-2xl font-bold text-slate-950">
+                            Ihre Angaben überprüfen
+                        </h2>
+
+                        <p className="mt-3 text-lg text-slate-600">
+                            Bitte prüfen Sie Ihre Angaben noch einmal, bevor Sie Ihr Konto erstellen.
+                        </p>
+
+                        {/* Persönliche Daten */}
+                        <div className="mt-8 rounded-2xl border border-stone-200 p-6">
+                            <h3 className="text-xl font-bold text-slate-950">
+                                Persönliche Angaben
+                            </h3>
+
+                            <div className="mt-5 space-y-4">
+                                <div>
+                                    <p className="text-sm font-semibold text-slate-500">
+                                        Vorname
+                                    </p>
+                                    <p className="text-lg font-semibold text-slate-950">
+                                        {firstName}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p className="text-sm font-semibold text-slate-500">
+                                        Nachname
+                                    </p>
+                                    <p className="text-lg font-semibold text-slate-950">
+                                        {lastName}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p className="text-sm font-semibold text-slate-500">
+                                        E-Mail-Adresse
+                                    </p>
+                                    <p className="text-lg font-semibold text-slate-950">
+                                        {email}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Adresse */}
+                        <div className="mt-6 rounded-2xl border border-stone-200 p-6">
+                            <h3 className="text-xl font-bold text-slate-950">
+                                Adresse
+                            </h3>
+
+                            <div className="mt-5 space-y-4">
+                                <div>
+                                    <p className="text-sm font-semibold text-slate-500">
+                                        Straße und Hausnummer
+                                    </p>
+                                    <p className="text-lg font-semibold text-slate-950">
+                                        {street} {houseNumber}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p className="text-sm font-semibold text-slate-500">
+                                        Postleitzahl und Stadt
+                                    </p>
+                                    <p className="text-lg font-semibold text-slate-950">
+                                        {postalCode} {city}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        {/* Nutzer kann zurückgehen oder die Registrierung endgültig absenden */}
+                        <div className="mt-8 flex gap-4">
+                            <button
+                                type="button"
+                                onClick={() => setStep(3)}
+                                className="w-1/3 rounded-2xl border-2 border-slate-300 px-6 py-5 text-lg font-bold text-slate-800 hover:bg-stone-50"
+                            >
+                                Zurück
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    console.log("Registrierung wird später hier abgesendet.");
+                                }}
+                                className="w-2/3 rounded-2xl bg-amber-700 px-6 py-5 text-xl font-bold text-white transition hover:bg-amber-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300"
+                            >
+                                Konto erstellen
                             </button>
                         </div>
                     </section>
