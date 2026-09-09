@@ -349,12 +349,12 @@ export default function SeniorRegisterPage() {
 
                             {/* Geburtsdatum */}
                             <div>
-                                <label htmlFor="birthdate" className="block text-lg font-semibold text-slate-800"
+                                <label htmlFor="birthDate" className="block text-lg font-semibold text-slate-800"
 
                                 >
                                     Geburtsdatum
                                 </label>
-
+                                
                                 <input
                                     id="birthDate"
                                     type="date"
@@ -720,6 +720,7 @@ export default function SeniorRegisterPage() {
 
                 {/* Übersicht vor dem endgültigen Absenden der Registrierung */}
                 {step === 4 && (
+
                     <section className="mt-10 rounded-3xl border border-stone-200 bg-white p-8 shadow-sm">
                         <h2 className="text-2xl font-bold text-slate-950">
                             Ihre Angaben überprüfen
@@ -737,7 +738,7 @@ export default function SeniorRegisterPage() {
 
                             <div className="mt-5 space-y-4">
                                 <div>
-                                    <p className="text-sm font-semibold text-slate-500">
+                                    <p className="text-lg font-semibold text-slate-500">
                                         Vorname
                                     </p>
                                     <p className="text-lg font-semibold text-slate-950">
@@ -746,16 +747,24 @@ export default function SeniorRegisterPage() {
                                 </div>
 
                                 <div>
-                                    <p className="text-sm font-semibold text-slate-500">
+                                    <p className="text-lg  font-semibold text-slate-500">
                                         Nachname
                                     </p>
                                     <p className="text-lg font-semibold text-slate-950">
                                         {lastName}
                                     </p>
                                 </div>
+                                <div>
+                                    <p className="text-lg font-semibold text-slate-500">
+                                        Geburtsdatum
+                                    </p>
+                                    <p className="text-lg font-semibold text-slate-950">
+                                        {birthDate}
+                                    </p>
+                                </div>
 
                                 <div>
-                                    <p className="text-sm font-semibold text-slate-500">
+                                    <p className="text-lg font-semibold text-slate-500">
                                         E-Mail-Adresse
                                     </p>
                                     <p className="text-lg font-semibold text-slate-950">
@@ -773,7 +782,7 @@ export default function SeniorRegisterPage() {
 
                             <div className="mt-5 space-y-4">
                                 <div>
-                                    <p className="text-sm font-semibold text-slate-500">
+                                    <p className="text-lg font-semibold text-slate-500">
                                         Straße und Hausnummer
                                     </p>
                                     <p className="text-lg font-semibold text-slate-950">
@@ -782,7 +791,7 @@ export default function SeniorRegisterPage() {
                                 </div>
 
                                 <div>
-                                    <p className="text-sm font-semibold text-slate-500">
+                                    <p className="text-lg font-semibold text-slate-500">
                                         Postleitzahl und Stadt
                                     </p>
                                     <p className="text-lg font-semibold text-slate-950">
