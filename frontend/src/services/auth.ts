@@ -61,3 +61,30 @@ export async function getCurrentUser(
 
   return response.json();
 }
+
+
+export type RegisterData = {
+  first_name: string;
+  last_name: string;
+  birth_date: string;
+  email: string;
+  password: string;
+  role: string;
+};
+
+
+
+export async function register(data: RegisterData) {
+  const response = await fetch("http://127.0.0.1:8000/users/register",{
+    method: "POST",
+    headers:{
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+
+  });
+  if (!response.ok) {
+    throw new Error("Regestrierung fehlgeschlagen");
+  }
+  return response.json();
+}

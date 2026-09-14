@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { getCurrentUser, login,register } from "@/services/auth";
+
 
 export default function Home() {
   return (

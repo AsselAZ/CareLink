@@ -43,6 +43,7 @@ def register_user(
         email=user_data.email,
         password_hash=hash_password(user_data.password),
         role=user_data.role.value,
+        birth_date=user_data.birth_date,
     )
 
     db.add(new_user)
@@ -55,6 +56,7 @@ def register_user(
         "last_name": new_user.last_name,
         "email": new_user.email,
         "role": new_user.role,
+        "birth_date": new_user.birth_date,
     }
 
 @router.get("/me")

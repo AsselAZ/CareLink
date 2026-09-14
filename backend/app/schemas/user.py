@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Optional
-
+from datetime import date
 from pydantic import BaseModel, EmailStr, Field
 
 
@@ -14,6 +14,10 @@ class UserRole(str, Enum):
 class UserCreate(BaseModel):
     first_name: str = Field(min_length=2, max_length=100)
     last_name: str = Field(min_length=2, max_length=100)
+
+#kein field(), weil Pydantic automatisch die Validierung übernimmt, dass es sich um ein gültiges Datum handelt
+    birth_date: date
+
     email: EmailStr
     password: str = Field(min_length=8)
     role: UserRole

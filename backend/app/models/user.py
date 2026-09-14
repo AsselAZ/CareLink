@@ -1,6 +1,6 @@
 from enum import Enum
 
-from sqlalchemy import Boolean, String
+from sqlalchemy import Boolean, String, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -20,6 +20,7 @@ class User(Base):
 
     first_name: Mapped[str] = mapped_column(String(100))
     last_name: Mapped[str] = mapped_column(String(100))
+    birth_date: Mapped[Date] = mapped_column(Date)
 
     email: Mapped[str] = mapped_column(
         String(255),

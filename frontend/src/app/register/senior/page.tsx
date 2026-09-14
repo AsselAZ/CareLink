@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { register } from "@/services/auth";
 
 export default function SeniorRegisterPage() {
     // Bestimmt, welcher Registrierungsschritt angezeigt wird.

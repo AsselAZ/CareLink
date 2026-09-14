@@ -1,3 +1,4 @@
+
 export default function SeniorPage() {
   return (
     <main className="min-h-screen bg-stone-50 px-6 py-10">
