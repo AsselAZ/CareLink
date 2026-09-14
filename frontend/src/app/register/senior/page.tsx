@@ -80,7 +80,7 @@ export default function SeniorRegisterPage() {
             return "Bitte geben Sie Ihre E-Mail-Adresse ein.";
         }
 
-        // Einfache Prüfung auf ein sinnvolles E-Mail-Format.
+        // Einfache Prüfung auf ein sinnvolles E-Mail-Format
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
             return "Bitte geben Sie eine gültige E-Mail-Adresse ein.";
         }
@@ -218,6 +218,30 @@ export default function SeniorRegisterPage() {
         // Danach wird die Übersicht angezeigt.
         setStep(4);
     }
+
+    async function handleCreateAccount() {
+    try {
+
+        // Was wollen wir hier aufrufen?
+        await register({
+            first_name: firstName,
+            last_name: lastName,
+            birth_date: birthDate,
+            email: email,
+            password: password,
+            role: "senior",
+        });
+        console.log("Registrierung erfolgreich");
+    } catch (error) {
+
+        // Was passiert, wenn die Registrierung fehlschlägt?
+        console.error("Registrierung fehlgeschlagen: ",error);
+
+    }
+}
+
+
+
 
     return (
         <main className="min-h-screen bg-stone-50 px-6 py-12">
@@ -816,9 +840,8 @@ export default function SeniorRegisterPage() {
 
                             <button
                                 type="button"
-                                onClick={() => {
-                                    console.log("Registrierung wird später hier abgesendet.");
-                                }}
+                                onClick={handleCreateAccount
+                                }
                                 className="w-2/3 rounded-2xl bg-amber-700 px-6 py-5 text-xl font-bold text-white transition hover:bg-amber-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300"
                             >
                                 Konto erstellen
